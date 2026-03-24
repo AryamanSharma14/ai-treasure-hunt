@@ -227,6 +227,30 @@ canvas {
   cursor: pointer; font-family: var(--font);
 }
 .results-btn:hover { border-color: var(--text-secondary); }
+
+/* ===== Mini Game ===== */
+#minigame-screen {
+  position: absolute; inset: 0; z-index: 10;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: var(--bg);
+}
+.mg-diff-btn {
+  padding: 14px 22px; border-radius: 8px;
+  border: 2px solid var(--border);
+  background: var(--card-bg);
+  cursor: pointer; font-family: var(--font);
+  transition: border-color 0.15s, background 0.15s;
+  min-width: 110px; text-align: center;
+}
+.mg-diff-btn:hover { background: rgba(255,255,255,0.05); }
+#mg-overlay {
+  position: absolute; inset: 0;
+  flex-direction: column;
+  align-items: center; justify-content: center;
+  background: rgba(30,30,46,0.92);
+  border-radius: 4px;
+}
 </style>
 </head>
 <body>
@@ -244,8 +268,9 @@ canvas {
   <div class="title-sub">Comparative Analysis of Search Algorithms</div>
   <div class="title-course">21CSC206T -- Artificial Intelligence</div>
   <div class="title-cta" onclick="showScreen('select')">Press Enter to Start</div>
+  <div style="margin-top:14px;font-size:14px;color:var(--text-dim);cursor:pointer;padding:6px 18px;border:1px solid var(--border);border-radius:4px;transition:border-color 0.15s" onmouseover="this.style.borderColor='var(--text-secondary)'" onmouseout="this.style.borderColor='var(--border)'" onclick="showScreen('minigame')">Mini Game — Maze Racer</div>
   <div class="title-hints">
-    [Enter] Play<br>[Q] Quit
+    [Enter] Play &nbsp;&nbsp; [M] Mini Game<br>[Q] Quit
   </div>
 </div>
 
@@ -294,6 +319,56 @@ canvas {
   </div>
 </div>
 
+<!-- Mini Game Screen -->
+<div id="minigame-screen" style="display:none">
+  <div id="mg-setup">
+    <div style="font-size:28px;font-weight:700;margin-bottom:8px">Maze Racer</div>
+    <div style="font-size:13px;color:var(--text-dim);margin-bottom:28px">Navigate the maze and reach the treasure before the AI!</div>
+    <div style="font-size:11px;color:var(--text-secondary);margin-bottom:12px;letter-spacing:0.06em;text-transform:uppercase">Choose Difficulty</div>
+    <div style="display:flex;gap:12px;margin-bottom:28px">
+      <button class="mg-diff-btn" onclick="startMiniGame('easy')">
+        <div style="font-size:16px;font-weight:700;color:var(--greedy)">Easy</div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px">vs Greedy AI</div>
+      </button>
+      <button class="mg-diff-btn" onclick="startMiniGame('medium')">
+        <div style="font-size:16px;font-weight:700;color:var(--bfs)">Medium</div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px">vs BFS AI</div>
+      </button>
+      <button class="mg-diff-btn" onclick="startMiniGame('hard')">
+        <div style="font-size:16px;font-weight:700;color:var(--astar)">Hard</div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px">vs A* AI</div>
+      </button>
+    </div>
+    <button class="results-btn" onclick="showScreen('title')">← Back</button>
+  </div>
+  <div id="mg-play" style="display:none;flex-direction:column;align-items:center">
+    <div style="display:flex;gap:28px;margin-bottom:12px;align-items:center">
+      <div style="text-align:center">
+        <div style="font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px">Your Steps</div>
+        <div style="font-size:22px;font-weight:700;color:#A855F7" id="mg-steps">0</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px">Time</div>
+        <div style="font-size:22px;font-weight:700" id="mg-time">0.0s</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px" id="mg-ai-label">AI Steps</div>
+        <div style="font-size:22px;font-weight:700" id="mg-ai-steps">0</div>
+      </div>
+      <div id="mg-diff-badge" style="font-size:11px;padding:3px 10px;border-radius:4px;border:1px solid var(--border);font-weight:600"></div>
+    </div>
+    <div style="position:relative;display:inline-block">
+      <canvas id="mg-canvas"></canvas>
+      <div id="mg-overlay" style="display:none"></div>
+    </div>
+    <div style="font-size:12px;color:var(--text-dim);margin-top:10px;text-align:center">
+      <kbd style="background:var(--card-bg);border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:11px;font-family:var(--font)">↑↓←→</kbd>
+      or <kbd style="background:var(--card-bg);border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:11px;font-family:var(--font)">WASD</kbd>
+      to move &nbsp;|&nbsp; <kbd style="background:var(--card-bg);border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:11px;font-family:var(--font)">Esc</kbd> Menu
+    </div>
+  </div>
+</div>
+
 <!-- Bottom bar -->
 <div id="bottom-bar" style="display:none">
   <span class="key-hint"><kbd>Space</kbd> Pause</span>
@@ -328,6 +403,17 @@ let grid = null, agents = [], speedIdx = 0, paused = false;
 let running = false, allDone = false, doneTimer = 0;
 let selectedMap = 0, activeAgents = [true, true, true, true];
 let canvas, ctx, cellW, cellH, animId;
+
+// ===== MINI GAME STATE =====
+let mg = {
+  canvas: null, ctx: null, grid: null,
+  player: null, aiPath: null, aiStep: 0,
+  aiColor: null, aiName: null, aiRate: 4,
+  steps: 0, startTime: 0,
+  running: false, done: false,
+  animId: null, aiFrameCounter: 0,
+  cellW: 0, cellH: 0, playerVisited: null
+};
 
 // ===== GRID =====
 class Grid {
@@ -755,16 +841,19 @@ function gameLoop() {
 function showScreen(name) {
   if (animId) { cancelAnimationFrame(animId); animId = null; }
   running = false;
+  mgStop();
 
   document.getElementById('title-screen').style.display = name==='title'?'flex':'none';
   document.getElementById('select-screen').style.display = name==='select'?'flex':'none';
   document.getElementById('game-area').style.display = name==='game'?'flex':'none';
   document.getElementById('results-screen').style.display = name==='results'?'flex':'none';
+  document.getElementById('minigame-screen').style.display = name==='minigame'?'flex':'none';
   document.getElementById('bottom-bar').style.display = name==='game'?'flex':'none';
 
   if (name === 'select') buildSelectScreen();
   if (name === 'game') { running = true; resizeCanvas(); gameLoop(); }
   if (name === 'results') buildResultsScreen();
+  if (name === 'minigame') mgShowSetup();
 }
 
 function buildSelectScreen() {
@@ -876,6 +965,216 @@ function buildResultsScreen() {
   }
 }
 
+// ===== MINI GAME =====
+function mgFindPath(grid, algo) {
+  const [sr,sc]=grid.start, [tr,tc]=grid.treasure;
+  const h=(r,c)=>Math.abs(r-tr)+Math.abs(c-tc);
+  const parent=new Map(); parent.set(sr+','+sc, null);
+
+  const reconstruct=()=>{
+    const path=[]; let k=tr+','+tc;
+    while(k!==null){
+      const [r,c]=k.split(',').map(Number); path.unshift([r,c]);
+      const p=parent.get(k); k=p?p[0]+','+p[1]:null;
+    }
+    return path;
+  };
+
+  if(algo==='bfs'){
+    const q=[[sr,sc]];
+    while(q.length){
+      const[r,c]=q.shift(); if(r===tr&&c===tc) return reconstruct();
+      for(const[nr,nc]of grid.neighbors(r,c)){
+        const k=nr+','+nc;
+        if(!parent.has(k)){parent.set(k,[r,c]); q.push([nr,nc]);}
+      }
+    }
+  } else {
+    const cost=new Map([[sr+','+sc,0]]);
+    const open=[[h(sr,sc),sr,sc]];
+    while(open.length){
+      open.sort((a,b)=>a[0]-b[0]);
+      const[,r,c]=open.shift(); if(r===tr&&c===tc) return reconstruct();
+      const g=cost.get(r+','+c)||0;
+      for(const[nr,nc]of grid.neighbors(r,c)){
+        const k=nr+','+nc;
+        if(!parent.has(k)){
+          parent.set(k,[r,c]); cost.set(k,g+1);
+          open.push([algo==='astar'?g+1+h(nr,nc):h(nr,nc),nr,nc]);
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function mgResize() {
+  if(!mg.canvas) return;
+  const maxW=Math.min(window.innerWidth-40,660);
+  const maxH=Math.min(window.innerHeight-220,440);
+  const cell=Math.floor(Math.min(maxW/COLS, maxH/ROWS));
+  mg.cellW=mg.cellH=cell;
+  mg.canvas.width=COLS*cell; mg.canvas.height=ROWS*cell;
+  mg.canvas.style.borderRadius='4px';
+}
+
+function startMiniGame(difficulty) {
+  const mapData=getMap(1);
+  mg.grid=new Grid(ROWS,COLS,mapData.walls,mapData.start,mapData.treasure);
+  mg.player=[...mg.grid.start];
+  mg.playerVisited=new Set([mg.player[0]+','+mg.player[1]]);
+  mg.steps=0; mg.aiStep=0; mg.aiFrameCounter=0; mg.done=false;
+  mg.startTime=performance.now();
+
+  const cfgs={
+    easy:  {algo:'greedy',color:COLORS.greedy,name:'Greedy',rate:6, label:'EASY'},
+    medium:{algo:'bfs',   color:COLORS.bfs,   name:'BFS',   rate:3, label:'MEDIUM'},
+    hard:  {algo:'astar', color:COLORS.astar,  name:'A*',    rate:2, label:'HARD'},
+  };
+  const cfg=cfgs[difficulty];
+  mg.aiColor=cfg.color; mg.aiName=cfg.name; mg.aiRate=cfg.rate;
+  mg.aiPath=mgFindPath(mg.grid, cfg.algo);
+
+  document.getElementById('mg-ai-label').textContent=cfg.name+' AI';
+  document.getElementById('mg-ai-steps').style.color=cfg.color;
+  const badge=document.getElementById('mg-diff-badge');
+  badge.textContent=cfg.label; badge.style.borderColor=cfg.color; badge.style.color=cfg.color;
+
+  document.getElementById('mg-setup').style.display='none';
+  const play=document.getElementById('mg-play');
+  play.style.display='flex';
+
+  mg.canvas=document.getElementById('mg-canvas');
+  mg.ctx=mg.canvas.getContext('2d');
+  mgResize();
+  document.getElementById('mg-overlay').style.display='none';
+
+  mg.running=true; mg.done=false;
+  mgLoop();
+}
+
+function mgMovePlayer(dr,dc) {
+  if(!mg.running||mg.done) return;
+  const[r,c]=mg.player;
+  const nr=r+dr, nc=c+dc;
+  if(nr<0||nr>=ROWS||nc<0||nc>=COLS||mg.grid.isWall(nr,nc)) return;
+  mg.player=[nr,nc]; mg.steps++;
+  mg.playerVisited.add(nr+','+nc);
+  const[tr,tc]=mg.grid.treasure;
+  if(nr===tr&&nc===tc) mgEndGame(true);
+}
+
+function mgLoop() {
+  if(!mg.running) return;
+  if(!mg.done){
+    mg.aiFrameCounter++;
+    if(mg.aiFrameCounter>=mg.aiRate && mg.aiPath && mg.aiStep<mg.aiPath.length-1){
+      mg.aiFrameCounter=0; mg.aiStep++;
+      const[ar,ac]=mg.aiPath[mg.aiStep];
+      const[tr,tc]=mg.grid.treasure;
+      if(ar===tr&&ac===tc) mgEndGame(false);
+    }
+    const elapsed=((performance.now()-mg.startTime)/1000).toFixed(1);
+    document.getElementById('mg-steps').textContent=mg.steps;
+    document.getElementById('mg-time').textContent=elapsed+'s';
+    document.getElementById('mg-ai-steps').textContent=mg.aiStep;
+  }
+  mgDraw();
+  mg.animId=requestAnimationFrame(mgLoop);
+}
+
+function mgEndGame(playerWon) {
+  mg.done=true;
+  const elapsed=((performance.now()-mg.startTime)/1000).toFixed(2);
+  const overlay=document.getElementById('mg-overlay');
+  const titleText=playerWon?'You Win!':mg.aiName+' Wins!';
+  const titleColor=playerWon?COLORS.start:mg.aiColor;
+  const subText=playerWon
+    ?`Reached treasure in ${mg.steps} steps (${elapsed}s). ${mg.aiName} used ${mg.aiStep} steps.`
+    :`${mg.aiName} reached treasure in ${mg.aiStep} steps. You took ${mg.steps} steps.`;
+  overlay.innerHTML=`
+    <div style="font-size:38px;font-weight:700;margin-bottom:8px;color:${titleColor}">${titleText}</div>
+    <div style="font-size:13px;color:var(--text-secondary);margin-bottom:24px">${subText}</div>
+    <div style="display:flex;gap:12px">
+      <button class="results-btn" onclick="showScreen('minigame')">Play Again</button>
+      <button class="results-btn" onclick="showScreen('title')">Menu</button>
+    </div>`;
+  overlay.style.display='flex';
+}
+
+function mgStop() {
+  if(mg.animId){cancelAnimationFrame(mg.animId); mg.animId=null;}
+  mg.running=false;
+}
+
+function mgShowSetup() {
+  mgStop();
+  document.getElementById('mg-setup').style.display='';
+  document.getElementById('mg-play').style.display='none';
+}
+
+function mgDraw() {
+  const{ctx,grid,cellW:cW,cellH:cH,player,aiPath,aiStep,aiColor,playerVisited}=mg;
+  if(!ctx||!grid) return;
+  const W=mg.canvas.width, H=mg.canvas.height;
+  const[tr,tc]=grid.treasure, [sr,sc]=grid.start;
+  const aiPos=aiPath&&aiStep<aiPath.length?aiPath[aiStep]:null;
+  const cell=Math.min(cW,cH);
+
+  ctx.fillStyle=COLORS.bg; ctx.fillRect(0,0,W,H);
+
+  // Walls & open cells
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    ctx.fillStyle=grid.isWall(r,c)?COLORS.wall:COLORS.open;
+    ctx.fillRect(c*cW+1,r*cH+1,cW-1,cH-1);
+  }
+
+  // Player trail
+  ctx.fillStyle='rgba(168,85,247,0.22)';
+  for(const k of playerVisited){
+    const[r,c]=k.split(',').map(Number);
+    ctx.fillRect(c*cW+1,r*cH+1,cW-1,cH-1);
+  }
+
+  // AI trail
+  if(aiPath&&aiStep>0){
+    ctx.globalAlpha=0.22; ctx.fillStyle=aiColor;
+    for(let i=0;i<=aiStep;i++){
+      const[r,c]=aiPath[i]; ctx.fillRect(c*cW+1,r*cH+1,cW-1,cH-1);
+    }
+    ctx.globalAlpha=1;
+  }
+
+  // Start marker
+  ctx.fillStyle=COLORS.start;
+  ctx.fillRect(sc*cW+cW*0.3,sr*cH+cH*0.3,cW*0.4,cH*0.4);
+
+  // Treasure (pulsing diamond)
+  const pulse=0.82+0.18*Math.sin(performance.now()/300);
+  ctx.fillStyle=COLORS.treasure;
+  ctx.beginPath();
+  const tx=tc*cW+cW/2, ty=tr*cH+cH/2, td=cell*0.38*pulse;
+  ctx.moveTo(tx,ty-td); ctx.lineTo(tx+td,ty);
+  ctx.lineTo(tx,ty+td); ctx.lineTo(tx-td,ty); ctx.closePath(); ctx.fill();
+
+  // AI marker (square)
+  if(aiPos){
+    const[ar,ac]=aiPos;
+    ctx.fillStyle=aiColor;
+    const s=cell*0.52;
+    ctx.fillRect(ac*cW+(cW-s)/2, ar*cH+(cH-s)/2, s, s);
+  }
+
+  // Player (circle with inner dot)
+  const[pr,pc]=player;
+  ctx.fillStyle='#A855F7';
+  ctx.beginPath();
+  ctx.arc(pc*cW+cW/2, pr*cH+cH/2, cell*0.36, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,0.55)';
+  ctx.beginPath();
+  ctx.arc(pc*cW+cW/2, pr*cH+cH/2, cell*0.12, 0, Math.PI*2); ctx.fill();
+}
+
 // ===== KEYBOARD =====
 document.addEventListener('keydown', e => {
   const titleVisible = document.getElementById('title-screen').style.display !== 'none';
@@ -885,7 +1184,20 @@ document.addEventListener('keydown', e => {
 
   if (titleVisible) {
     if (e.key==='Enter'||e.key===' ') showScreen('select');
+    if (e.key==='m'||e.key==='M') showScreen('minigame');
     if (e.key==='q'||e.key==='Escape') window.close();
+    return;
+  }
+
+  const minigameVisible = document.getElementById('minigame-screen').style.display !== 'none';
+  if (minigameVisible) {
+    if (e.key==='Escape') showScreen('title');
+    if (mg.running && !mg.done) {
+      if (e.key==='ArrowUp'||e.key==='w'||e.key==='W') { e.preventDefault(); mgMovePlayer(-1,0); }
+      if (e.key==='ArrowDown'||e.key==='s'||e.key==='S') { e.preventDefault(); mgMovePlayer(1,0); }
+      if (e.key==='ArrowLeft'||e.key==='a'||e.key==='A') { e.preventDefault(); mgMovePlayer(0,-1); }
+      if (e.key==='ArrowRight'||e.key==='d'||e.key==='D') { e.preventDefault(); mgMovePlayer(0,1); }
+    }
     return;
   }
   if (selectVisible) {
@@ -921,6 +1233,7 @@ document.addEventListener('keydown', e => {
 // Handle resize
 window.addEventListener('resize', () => {
   if (running) resizeCanvas();
+  if (mg.running) mgResize();
 });
 
 // Init
