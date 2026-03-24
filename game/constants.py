@@ -67,6 +67,7 @@ STATE_SELECT_MAP = 'select_map'
 STATE_GAME       = 'game'
 STATE_RESULTS    = 'results'
 STATE_EDITOR     = 'editor'
+STATE_MINIGAME   = 'minigame'
 STATE_QUIT       = 'quit'
 
 # --- Map names ---

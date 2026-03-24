@@ -5,7 +5,7 @@ import random
 import pygame
 from game.constants import (
     WINDOW_W, WINDOW_H, COLORS,
-    STATE_SELECT_MAP, STATE_EDITOR, STATE_QUIT, AGENT_CONFIGS,
+    STATE_SELECT_MAP, STATE_EDITOR, STATE_MINIGAME, STATE_QUIT, AGENT_CONFIGS,
 )
 
 
@@ -75,9 +75,16 @@ class TitleScreen:
                 return STATE_SELECT_MAP
             if event.key == pygame.K_e:
                 return STATE_EDITOR
+            if event.key == pygame.K_g:
+                return STATE_MINIGAME
             if event.key in (pygame.K_q, pygame.K_ESCAPE):
                 return STATE_QUIT
         if event.type == pygame.MOUSEBUTTONDOWN:
+            mx, my = event.pos
+            # Check if mini game button was clicked
+            btn_rect = getattr(self, '_minigame_btn_rect', None)
+            if btn_rect and btn_rect.collidepoint(mx, my):
+                return STATE_MINIGAME
             return STATE_SELECT_MAP
         return None
 
@@ -169,11 +176,22 @@ class TitleScreen:
                                         (blink, blink, 255))
         surf.blit(cta_surf, cta_surf.get_rect(center=(cx, y)))
 
+        # Mini game button
+        mg_y = y + 52
+        mg_text = '[ G ]  Pacman Mini Game  →'
+        mg_alpha = int((math.sin(self.tick * 0.04) + 1) / 2 * 40) + 140
+        mg_surf = self.font_sub.render(mg_text, True, (255, 224, 64))
+        mg_surf.set_alpha(mg_alpha)
+        mg_rect = mg_surf.get_rect(center=(cx, mg_y))
+        surf.blit(mg_surf, mg_rect)
+        self._minigame_btn_rect = mg_rect
+
     def _draw_hints(self, surf):
         hints = [
-            ('[Enter / Space]  Play',  COLORS['text_secondary']),
-            ('[E]  Map Editor',        COLORS['text_secondary']),
-            ('[Q / Esc]  Quit',        COLORS['text_dim']),
+            ('[Enter / Space]  Play',      COLORS['text_secondary']),
+            ('[G]  Pacman Mini Game',       COLORS['text_secondary']),
+            ('[E]  Map Editor',             COLORS['text_secondary']),
+            ('[Q / Esc]  Quit',             COLORS['text_dim']),
         ]
         x = 30
         y = WINDOW_H - 30 - len(hints) * 22

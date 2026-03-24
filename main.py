@@ -26,7 +26,7 @@ from game.constants import (
     WINDOW_W, WINDOW_H, FPS, GRID_ROWS, GRID_COLS,
     AGENT_CONFIGS, DEFAULT_SPEED_IDX,
     STATE_TITLE, STATE_SELECT_MAP, STATE_GAME,
-    STATE_RESULTS, STATE_EDITOR, STATE_QUIT,
+    STATE_RESULTS, STATE_EDITOR, STATE_MINIGAME, STATE_QUIT,
 )
 from game.agent import Agent
 from game.grid import Grid
@@ -37,6 +37,7 @@ from screens.select_map_screen import SelectMapScreen
 from screens.game_screen import GameScreen
 from screens.results_screen import ResultsScreen
 from screens.editor_screen import EditorScreen
+from screens.minigame_screen import MiniGameScreen
 
 
 def make_initial_state():
@@ -74,6 +75,7 @@ class ScreenManager:
         STATE_GAME       : GameScreen,
         STATE_RESULTS    : ResultsScreen,
         STATE_EDITOR     : EditorScreen,
+        STATE_MINIGAME   : MiniGameScreen,
     }
 
     def __init__(self, surface: pygame.Surface):
