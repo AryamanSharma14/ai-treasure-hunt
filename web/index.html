@@ -54,7 +54,7 @@ html, body {
   position: absolute; inset: 0; z-index: 10;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  background: var(--bg);
+  background: rgba(2,2,9,0.72);
 }
 
 /* Ambient glow on fullscreen panels */
@@ -353,9 +353,11 @@ html, body {
 /* ===== RESULTS ===== */
 .results-title {
   font-family: var(--font-display);
-  font-size: 24px; font-weight: 700;
-  letter-spacing: 0.12em;
-  margin-bottom: 14px;
+  font-size: 22px; font-weight: 900;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: #fff; margin-bottom: 14px;
+  animation: glitchTitle 5s steps(1) infinite;
+  text-shadow: 0 0 20px rgba(0,255,255,0.3);
 }
 .results-winner {
   font-size: 14px; font-weight: 600;
@@ -468,7 +470,7 @@ html, body {
 <div id="game-area" style="display:none">
   <div id="maze-wrap"><canvas id="maze"></canvas></div>
   <div id="stats-panel">
-    <div class="panel-title">Live Intelligence</div>
+    <div class="panel-title">Live Intel</div>
     <div id="agent-cards"></div>
     <div class="controls-section">
       <div class="speed-row">
