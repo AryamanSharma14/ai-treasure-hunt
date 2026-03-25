@@ -933,6 +933,7 @@ function buildResultsScreen(){
   const tbody=document.getElementById('results-body');tbody.innerHTML='';
   for(const a of agents){
     const tr=document.createElement('tr');
+    if(a.firstFound) tr.classList.add('winner-row');
     tr.innerHTML=`<td style="color:${a.color};font-weight:600">${a.name}${a.firstFound?' *':''}</td>
       <td>${a.active?a.nodesExplored:'--'}</td>
       <td>${a.active&&a.status==='found'?a.pathLength:'--'}</td>
