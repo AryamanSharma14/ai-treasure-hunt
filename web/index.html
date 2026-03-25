@@ -397,33 +397,56 @@ html, body {
 #pacman-screen {
   position: absolute; inset: 0; z-index: 10;
   display: none; flex-direction: column;
-  background: #0f0f1a;
-  font-family: 'Courier New', monospace;
+  background: var(--bg);
+  font-family: var(--font);
 }
 #pac-hud {
   display:flex; align-items:center; gap:20px; flex-wrap:wrap;
-  padding:7px 16px; background:#111120;
-  border-bottom:1px solid #1e1e38; flex-shrink:0; font-size:13px;
+  padding:7px 16px; background:#03030c;
+  border-bottom:1px solid rgba(0,255,255,0.12); flex-shrink:0; font-size:13px;
+  font-family: var(--font-display);
 }
-#pac-hud .hud-title { font-size:15px; font-weight:900; letter-spacing:0.1em; color:#ffe040; }
-#pac-hud .hud-sep { color:#222240; }
-#pac-hud #pac-score { color:#ffcc00; font-weight:700; }
-#pac-hud #pac-lives { color:#ff4757; letter-spacing:3px; }
-#pac-hud #pac-level { color:#4A9EFF; font-weight:700; }
-#pac-hud #pac-map-name { color:#8888aa; font-size:11px; }
-#pac-hud .hud-back { margin-left:auto; font-size:11px; color:#333355; cursor:pointer; }
-#pac-hud .hud-back:hover { color:#8888aa; }
+#pac-hud .hud-title {
+  font-size:12px; font-weight:900; letter-spacing:0.22em; text-transform:uppercase;
+  color: var(--cyan); text-shadow: 0 0 14px rgba(0,255,255,0.5);
+}
+#pac-hud .hud-sep { color: var(--border-bright); }
+#pac-hud #pac-score { color: var(--gold); font-weight:700; }
+#pac-hud #pac-lives { color: var(--greedy); letter-spacing:3px; }
+#pac-hud #pac-level { color: var(--bfs); font-weight:700; }
+#pac-hud #pac-map-name { color: var(--text-secondary); font-size:10px; letter-spacing:0.1em; }
+#pac-hud .hud-back {
+  margin-left:auto; font-size:10px; color: var(--text-dim); cursor:pointer;
+  letter-spacing:0.12em; text-transform:uppercase;
+  transition: color 0.15s;
+}
+#pac-hud .hud-back:hover { color: var(--cyan); }
 #pac-main { flex:1; display:flex; overflow:hidden; min-height:0; }
-#pac-canvas-wrap { flex:1; display:flex; align-items:center; justify-content:center; padding:6px; }
-#pac-canvas { background: #0f0f1a; }
-#pac-panel { width:230px; background:#0d0d20; border-left:1px solid #1e1e38; padding:10px; overflow-y:auto; flex-shrink:0; }
+#pac-canvas-wrap { flex:1; display:flex; align-items:center; justify-content:center; padding:6px; background: rgba(2,2,9,0.6); }
+#pac-canvas { background: #020209; box-shadow: 0 0 30px rgba(0,255,255,0.08), 0 0 1px rgba(0,255,255,0.15); }
+#pac-panel {
+  width:230px;
+  background: linear-gradient(180deg, #050510 0%, #020209 100%);
+  border-left:1px solid var(--border-bright);
+  padding:10px; overflow-y:auto; flex-shrink:0;
+  font-family: var(--font-display);
+}
+#pac-panel::-webkit-scrollbar { width: 3px; }
+#pac-panel::-webkit-scrollbar-thumb { background: var(--border-bright); }
 #pac-bottom {
   display:flex; gap:14px; padding:5px 14px;
-  background:#111120; border-top:1px solid #1e1e38;
-  font-size:10px; color:#333355; flex-shrink:0; flex-wrap:wrap;
-  font-family:'Courier New', monospace;
+  background:#03030c; border-top:1px solid rgba(0,255,255,0.08);
+  font-size:10px; color: var(--text-secondary); flex-shrink:0; flex-wrap:wrap;
+  font-family: var(--font-display); letter-spacing:0.05em;
 }
-#pac-bottom kbd { background:#1a1a30; border:1px solid #2a2a4a; border-radius:3px; padding:1px 5px; color:#666688; font-family:inherit; }
+#pac-bottom kbd {
+  background:#0a0a1e;
+  border:1px solid rgba(0,255,255,0.18);
+  border-bottom:2px solid rgba(0,255,255,0.28);
+  border-radius:3px; padding:1px 6px;
+  color:rgba(0,255,255,0.55);
+  font-family:'Courier New',monospace; font-size:10px; font-weight:700;
+}
 </style>
 </head>
 <body>
@@ -1486,7 +1509,7 @@ function pacHandleKey(key){
 // UNIFIED SCREEN MANAGEMENT
 // ============================================================
 function showScreen(name){
-  if(window.setBgPaused) window.setBgPaused(name === 'game');
+  if(window.setBgPaused) window.setBgPaused(name !== 'title');
   // Stop ATH if leaving game
   if(name!=='game'){if(animId){cancelAnimationFrame(animId);animId=null;}running=false;}
   // Stop Pacman if leaving it
@@ -1651,17 +1674,17 @@ showScreen('title');
     const col = AGENT_COLORS[mazeColorIdx];
     const rgb = col.match(/\w\w/g).map(x=>parseInt(x,16));
     // explored cells
-    bgCtx.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.12)`;
+    bgCtx.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.28)`;
     for(const[r,c] of mazeExplored)
       bgCtx.fillRect(c*cw+0.5, r*ch+0.5, cw-1, ch-1);
     // path
     if(mazePath.length) {
-      bgCtx.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.35)`;
+      bgCtx.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.60)`;
       for(const[r,c] of mazePath)
         bgCtx.fillRect(c*cw+1, r*ch+1, cw-2, ch-2);
     }
     // walls
-    bgCtx.fillStyle = 'rgba(13,13,26,0.5)';
+    bgCtx.fillStyle = 'rgba(13,13,26,0.75)';
     for(let r=0;r<MR;r++) for(let c=0;c<MC;c++)
       if(MAZE_WALLS.has(r+','+c))
         bgCtx.fillRect(c*cw+0.5, r*ch+0.5, cw-1, ch-1);
@@ -1698,9 +1721,9 @@ showScreen('title');
         const dx=nodes[i].x-nodes[j].x, dy=nodes[i].y-nodes[j].y;
         const d=Math.sqrt(dx*dx+dy*dy);
         if(d<75) {
-          const a=(1-d/75)*0.28;
+          const a=(1-d/75)*0.55;
           bgCtx.strokeStyle=`rgba(0,200,255,${a})`;
-          bgCtx.lineWidth=0.5;
+          bgCtx.lineWidth=0.8;
           bgCtx.beginPath();
           bgCtx.moveTo(nodes[i].x,nodes[i].y);
           bgCtx.lineTo(nodes[j].x,nodes[j].y);
@@ -1734,8 +1757,8 @@ showScreen('title');
     for(const n of nodes) {
       const pulse=0.35+0.65*Math.abs(Math.sin(n.phase));
       const rgb=n.color.match(/\w\w/g).map(x=>parseInt(x,16));
-      bgCtx.shadowBlur=8*pulse; bgCtx.shadowColor=n.color;
-      bgCtx.fillStyle=`rgba(${rgb[0]},${rgb[1]},${rgb[2]},${pulse*0.7})`;
+      bgCtx.shadowBlur=14*pulse; bgCtx.shadowColor=n.color;
+      bgCtx.fillStyle=`rgba(${rgb[0]},${rgb[1]},${rgb[2]},${pulse})`;
       bgCtx.beginPath(); bgCtx.arc(n.x,n.y,n.r,0,Math.PI*2); bgCtx.fill();
       bgCtx.shadowBlur=0;
     }
@@ -1758,7 +1781,7 @@ showScreen('title');
     drawNeuralLayer();
 
     // Scanline overlay
-    bgCtx.fillStyle='rgba(0,0,0,0.18)';
+    bgCtx.fillStyle='rgba(0,0,0,0.07)';
     for(let y=0;y<H;y+=3) bgCtx.fillRect(0,y,W,1);
   }
 
