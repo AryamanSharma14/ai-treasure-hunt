@@ -450,7 +450,7 @@ html, body {
 </style>
 </head>
 <body>
-<canvas id="bg-canvas" style="position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none;display:block;"></canvas>
+<canvas id="bg-canvas" style="position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none;display:block;transition:opacity 0.3s;"></canvas>
 <div id="app">
 
 <!-- ===== AI TREASURE HUNT TITLE ===== -->
@@ -1592,7 +1592,15 @@ showScreen('title');
   let bgRafId = null;
 
   // Expose bgPaused setter for showScreen()
-  window.setBgPaused = function(val) { bgPaused = val; };
+  window.setBgPaused = function(val) {
+    bgPaused = val;
+    if(val) {
+      bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+      bgCanvas.style.opacity = '0';
+    } else {
+      bgCanvas.style.opacity = '1';
+    }
+  };
 
   function resizeBg() {
     bgCanvas.width = window.innerWidth;
