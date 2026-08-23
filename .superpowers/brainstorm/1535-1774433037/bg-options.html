@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Background Options</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@400;600&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #020209; color: #fff; font-family: 'Rajdhani', sans-serif; padding: 24px; }
+  h1 { font-family: 'Orbitron', sans-serif; font-size: 13px; letter-spacing: 0.25em; text-align: center; color: #00ffff; margin-bottom: 6px; text-shadow: 0 0 12px #00ffff; }
+  .subtitle { text-align: center; color: #336; font-size: 12px; letter-spacing: 0.1em; margin-bottom: 28px; text-transform: uppercase; }
+  .options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; max-width: 1000px; margin: 0 auto; }
+  .opt { border: 1px solid #1a1a3a; border-radius: 10px; overflow: hidden; cursor: pointer; transition: all 0.2s; background: #030310; }
+  .opt:hover { border-color: #00ffff; box-shadow: 0 0 24px rgba(0,255,255,0.15); transform: translateY(-3px); }
+  .opt.selected { border-color: #fff; }
+  .opt.selected .badge { display: block; }
+  .badge { display: none; position: absolute; top: 8px; right: 8px; background: #fff; color: #000; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; z-index: 20; }
+
+  /* Preview canvas containers */
+  .prev { height: 180px; position: relative; overflow: hidden; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+  /* Title overlay on each preview */
+  .overlay {
+    position: absolute; inset: 0; z-index: 5;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: transparent;
+  }
+  .ov-title {
+    font-family: 'Orbitron', sans-serif; font-size: 15px; font-weight: 900;
+    color: #fff; letter-spacing: 0.08em; text-align: center;
+    text-shadow: 0 0 16px #00ffff, 0 0 40px rgba(0,200,255,0.4);
+  }
+  .ov-sub { font-family: 'Orbitron', sans-serif; font-size: 7px; color: #00ffff; letter-spacing: 0.25em; margin-top: 6px; opacity: 0.7; }
+
+  .label { padding: 12px 16px; border-top: 1px solid #0d0d25; }
+  .label h3 { font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 700; color: #00ffff; margin-bottom: 4px; letter-spacing: 0.1em; }
+  .label p { font-size: 12px; color: #445; line-height: 1.5; }
+
+  .footer { text-align: center; color: #222; font-size: 12px; margin-top: 28px; letter-spacing: 0.08em; }
+</style>
+</head>
+<body>
+<h1>Animated Background Options</h1>
+<p class="subtitle">All procedurally generated — no video files needed</p>
+
+<div class="options">
+
+  <!-- OPTION A: AI Maze Solver -->
+  <div class="opt" id="opt-a" onclick="pick('a')">
+    <div class="badge">✓ PICKED</div>
+    <div class="prev">
+      <canvas id="c-maze"></canvas>
+      <div class="overlay">
+        <div class="ov-title">AI TREASURE<br>HUNT</div>
+        <div class="ov-sub">SEARCH ALGORITHMS</div>
+      </div>
+    </div>
+    <div class="label">
+      <h3>A — Live Maze Solver</h3>
+      <p>A miniature AI maze runs in the background — explores, finds the path, resets. Thematically perfect. Agents' colors flood the grid behind your UI.</p>
+    </div>
+  </div>
+
+  <!-- OPTION B: Neural Network Nodes -->
+  <div class="opt" id="opt-b" onclick="pick('b')">
+    <div class="badge">✓ PICKED</div>
+    <div class="prev">
+      <canvas id="c-neural"></canvas>
+      <div class="overlay">
+        <div class="ov-title">AI TREASURE<br>HUNT</div>
+        <div class="ov-sub">SEARCH ALGORITHMS</div>
+      </div>
+    </div>
+    <div class="label">
+      <h3>B — Neural Network Web</h3>
+      <p>Floating nodes connect with pulsing cyan lines — like a neural network thinking. Particles drift slowly, edges flash as "signals" pass through.</p>
+    </div>
+  </div>
+
+  <!-- OPTION C: Matrix Rain -->
+  <div class="opt" id="opt-c" onclick="pick('c')">
+    <div class="badge">✓ PICKED</div>
+    <div class="prev">
+      <canvas id="c-matrix"></canvas>
+      <div class="overlay">
+        <div class="ov-title">AI TREASURE<br>HUNT</div>
+        <div class="ov-sub">SEARCH ALGORITHMS</div>
+      </div>
+    </div>
+    <div class="label">
+      <h3>C — Code Rain</h3>
+      <p>Matrix-style falling characters (0s, 1s, algorithm symbols). Classic cyberpunk AI aesthetic. Columns fade in and out, bright leading characters glow.</p>
+    </div>
+  </div>
+
+</div>
+<p class="footer">Tell me A, B, or C in the terminal — or mix them!</p>
+
+<script>
+// ===== OPTION A: MAZE SOLVER =====
+(function() {
+  const canvas = document.getElementById('c-maze');
+  const W = 300, H = 180, ROWS = 15, COLS = 25;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  const cw = W/COLS, ch = H/ROWS;
+
+  // Simple open grid with some walls
+  const walls = new Set();
+  const addW = (r,c) => walls.add(r+','+c);
+  for(let c=3;c<=8;c++) addW(3,c);
+  for(let c=3;c<=7;c++) addW(4,c);
+  for(let r=2;r<=6;r++) addW(r,10);
+  for(let c=14;c<=18;c++) addW(7,c);
+  for(let r=9;r<=12;r++) addW(r,6);
+  for(let c=18;c<=22;c++) addW(3,c);
+  for(let r=5;r<=9;r++) addW(r,19);
+
+  const start=[12,1], treasure=[1,23];
+  const AGENTS=[{color:'#4A9EFF',name:'bfs'},{color:'#FFB830',name:'dfs'},{color:'#50E3A4',name:'astar'},{color:'#FF6B6B',name:'greedy'}];
+  let explored=[], path=[], phase='searching', tick=0, agentIdx=0;
+  const queue=[[start]], visited=new Set([start[0]+','+start[1]]), cameFrom=new Map();
+
+  function step() {
+    if(phase==='searching' && queue.length) {
+      const batch=3;
+      for(let b=0;b<batch&&queue.length;b++){
+        const [r,c]=queue.shift();
+        explored.push([r,c,agentIdx]);
+        if(r===treasure[0]&&c===treasure[1]){phase='found';let n=treasure;const p=[];while(n){p.push(n);n=cameFrom.get(n[0]+','+n[1]);}path=p;return;}
+        for(const[dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]){
+          const nr=r+dr,nc=c+dc;
+          if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&!walls.has(nr+','+nc)&&!visited.has(nr+','+nc)){
+            visited.add(nr+','+nc);cameFrom.set(nr+','+nc,[r,c]);queue.push([nr,nc]);
+          }
+        }
+      }
+    } else if(phase==='found'||phase==='searching'&&!queue.length) {
+      tick++;
+      if(tick>60){
+        // reset
+        explored=[];path=[];phase='searching';tick=0;
+        agentIdx=(agentIdx+1)%AGENTS.length;
+        queue.length=0;queue.push([start]);
+        visited.clear();visited.add(start[0]+','+start[1]);
+        cameFrom.clear();
+      }
+    }
+  }
+
+  function draw() {
+    ctx.fillStyle='#020209';ctx.fillRect(0,0,W,H);
+    // Open cells
+    ctx.fillStyle='#0c0c18';
+    for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++)
+      if(!walls.has(r+','+c)) ctx.fillRect(c*cw+0.5,r*ch+0.5,cw-1,ch-1);
+    // Explored
+    const col=AGENTS[agentIdx].color;
+    const rgb=col.match(/\w\w/g).map(x=>parseInt(x,16));
+    ctx.fillStyle=`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.18)`;
+    for(const[r,c] of explored) ctx.fillRect(c*cw+0.5,r*ch+0.5,cw-1,ch-1);
+    // Path
+    if(path.length){
+      ctx.fillStyle=col;
+      for(const[r,c] of path) ctx.fillRect(c*cw+1,r*ch+1,cw-2,ch-2);
+    }
+    // Walls
+    ctx.fillStyle='#1a1a2e';
+    for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++)
+      if(walls.has(r+','+c)) ctx.fillRect(c*cw+0.5,r*ch+0.5,cw-1,ch-1);
+    // Start/Treasure
+    ctx.fillStyle='#50E3A4';ctx.fillRect(start[1]*cw+2,start[0]*ch+2,cw-4,ch-4);
+    ctx.fillStyle='#FF4757';ctx.fillRect(treasure[1]*cw+2,treasure[0]*ch+2,cw-4,ch-4);
+    // Scanline overlay
+    ctx.fillStyle='rgba(0,0,0,0.25)';
+    for(let y=0;y<H;y+=4) ctx.fillRect(0,y,W,1);
+  }
+
+  setInterval(()=>{step();draw();},40);
+  draw();
+})();
+
+// ===== OPTION B: NEURAL NETWORK =====
+(function() {
+  const canvas = document.getElementById('c-neural');
+  const W=300,H=180; canvas.width=W; canvas.height=H;
+  const ctx=canvas.getContext('2d');
+  const COLS_=['#4A9EFF','#FFB830','#50E3A4','#FF6B6B','#00ffff','#ff00ff'];
+  const nodes=Array.from({length:28},(_,i)=>({
+    x:20+Math.random()*(W-40), y:10+Math.random()*(H-20),
+    vx:(Math.random()-0.5)*0.4, vy:(Math.random()-0.5)*0.4,
+    r:2+Math.random()*2,
+    color:COLS_[Math.floor(Math.random()*COLS_.length)],
+    phase:Math.random()*Math.PI*2
+  }));
+  let t=0;
+  function draw(){
+    ctx.fillStyle='rgba(2,2,9,0.2)';ctx.fillRect(0,0,W,H);
+    t+=0.016;
+    // Move nodes
+    for(const n of nodes){
+      n.x+=n.vx;n.y+=n.vy;
+      if(n.x<5||n.x>W-5)n.vx*=-1;
+      if(n.y<5||n.y>H-5)n.vy*=-1;
+      n.phase+=0.02;
+    }
+    // Edges
+    for(let i=0;i<nodes.length;i++) for(let j=i+1;j<nodes.length;j++){
+      const dx=nodes[i].x-nodes[j].x,dy=nodes[i].y-nodes[j].y;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      if(d<70){
+        const alpha=(1-d/70)*0.35;
+        ctx.strokeStyle=`rgba(0,255,255,${alpha})`;
+        ctx.lineWidth=0.5;
+        ctx.beginPath();ctx.moveTo(nodes[i].x,nodes[i].y);ctx.lineTo(nodes[j].x,nodes[j].y);ctx.stroke();
+        // Pulse signal
+        if(Math.random()<0.003){
+          const prog=(t*0.5)%1;
+          const px=nodes[i].x+(nodes[j].x-nodes[i].x)*prog;
+          const py=nodes[i].y+(nodes[j].y-nodes[i].y)*prog;
+          ctx.fillStyle='rgba(0,255,255,0.9)';
+          ctx.beginPath();ctx.arc(px,py,1.5,0,Math.PI*2);ctx.fill();
+        }
+      }
+    }
+    // Nodes
+    for(const n of nodes){
+      const pulse=0.5+0.5*Math.sin(n.phase);
+      const rgb=n.color.match(/\w\w/g).map(x=>parseInt(x,16));
+      ctx.shadowBlur=8*pulse; ctx.shadowColor=n.color;
+      ctx.fillStyle=n.color;
+      ctx.globalAlpha=0.4+0.6*pulse;
+      ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=1; ctx.shadowBlur=0;
+    }
+    // Scanline
+    ctx.fillStyle='rgba(0,0,0,0.18)';
+    for(let y=0;y<H;y+=3) ctx.fillRect(0,y,W,1);
+  }
+  setInterval(draw,33);
+})();
+
+// ===== OPTION C: MATRIX RAIN =====
+(function(){
+  const canvas=document.getElementById('c-matrix');
+  const W=300,H=180; canvas.width=W; canvas.height=H;
+  const ctx=canvas.getContext('2d');
+  const CHARS='01アBFSdfs★◆▲⟨⟩∑∇λπ∞≠01BFS01';
+  const COLS=Math.floor(W/10);
+  const drops=Array.from({length:COLS},()=>Math.random()*H);
+  function draw(){
+    ctx.fillStyle='rgba(2,2,9,0.08)';ctx.fillRect(0,0,W,H);
+    for(let i=0;i<COLS;i++){
+      const char=CHARS[Math.floor(Math.random()*CHARS.length)];
+      // Lead char — bright cyan
+      ctx.font='10px monospace';
+      ctx.fillStyle='rgba(200,255,255,0.9)';
+      ctx.fillText(char,i*10,drops[i]);
+      // Trail char below
+      ctx.fillStyle='rgba(0,255,100,0.25)';
+      ctx.fillText(CHARS[Math.floor(Math.random()*CHARS.length)],i*10,drops[i]-12);
+      if(drops[i]>H&&Math.random()>0.97) drops[i]=0;
+      drops[i]+=10;
+    }
+    // Scanline
+    ctx.fillStyle='rgba(0,0,0,0.22)';
+    for(let y=0;y<H;y+=3) ctx.fillRect(0,y,W,1);
+  }
+  setInterval(draw,55);
+})();
+
+// Selection
+function pick(id) {
+  document.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+  document.getElementById('opt-'+id).classList.add('selected');
+}
+</script>
+</body>
+</html>

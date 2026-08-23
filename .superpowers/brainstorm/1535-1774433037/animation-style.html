@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Animation Style</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@400;600&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #020209; color: #fff; font-family: 'Rajdhani', sans-serif; padding: 28px; min-height: 100vh; }
+  h1 { font-family: 'Orbitron', sans-serif; font-size: 14px; letter-spacing: 0.25em; text-align: center; color: #00ffff; margin-bottom: 6px; text-transform: uppercase; text-shadow: 0 0 16px #00ffff; }
+  .subtitle { text-align: center; color: #336; font-size: 12px; letter-spacing: 0.12em; margin-bottom: 36px; text-transform: uppercase; }
+  .options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; max-width: 900px; margin: 0 auto; }
+  .opt { border: 1px solid #1a1a3a; border-radius: 10px; overflow: hidden; cursor: pointer; transition: all 0.2s; background: #030310; }
+  .opt:hover { border-color: #00ffff; box-shadow: 0 0 24px rgba(0,255,255,0.15); transform: translateY(-3px); }
+  .opt.selected { border-color: #fff; box-shadow: 0 0 30px rgba(255,255,255,0.1); }
+  .opt.selected .badge { display: block; }
+
+  .badge { display: none; position: absolute; top: 8px; right: 8px; background: #fff; color: #000; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+
+  /* Preview boxes */
+  .prev { height: 160px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+
+  /* OPTION 1: Subtle — gentle scanlines + soft glow pulse */
+  .prev-subtle { background: #020209; }
+  .prev-subtle::before {
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,255,255,0.02) 3px, rgba(0,255,255,0.02) 4px);
+  }
+  .prev-subtle .demo-title {
+    font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: 900;
+    color: #fff; text-shadow: 0 0 12px rgba(0,255,255,0.5);
+    animation: subtlePulse 3s ease-in-out infinite;
+    position: relative; z-index: 1; letter-spacing: 0.06em;
+  }
+  @keyframes subtlePulse { 0%,100%{text-shadow:0 0 12px rgba(0,255,255,0.4);} 50%{text-shadow:0 0 22px rgba(0,255,255,0.7);} }
+
+  /* OPTION 2: Dynamic — glitch effect + moving scanline */
+  .prev-dynamic { background: #020209; }
+  .prev-dynamic::before {
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,255,0.025) 2px, rgba(0,255,255,0.025) 4px);
+    animation: scanMove 4s linear infinite;
+  }
+  .prev-dynamic::after {
+    content: ''; position: absolute;
+    left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0,255,255,0.4), transparent);
+    animation: scanline 3s linear infinite;
+  }
+  @keyframes scanline { 0%{top:-5%} 100%{top:105%} }
+  @keyframes scanMove { 0%{background-position:0 0} 100%{background-position:0 40px} }
+  .prev-dynamic .demo-title {
+    font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: 900;
+    color: #fff; position: relative; z-index: 1; letter-spacing: 0.06em;
+    animation: glitchText 4s steps(1) infinite;
+  }
+  @keyframes glitchText {
+    0%,90%,100%{text-shadow:0 0 16px #00ffff,0 0 40px rgba(0,200,255,0.4);transform:translate(0);}
+    92%{transform:translate(-2px,0);text-shadow:-2px 0 #ff00ff,2px 0 #00ffff;}
+    94%{transform:translate(2px,0);text-shadow:2px 0 #ff00ff,-2px 0 #00ffff;}
+    96%{transform:translate(0);}
+  }
+
+  /* OPTION 3: Intense — particles + full glitch + chromatic aberration */
+  .prev-intense { background: #010107; }
+  .prev-intense::before {
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,255,255,0.03) 1px, rgba(0,255,255,0.03) 2px);
+  }
+  .prev-intense::after {
+    content: ''; position: absolute;
+    left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(255,0,255,0.5), rgba(0,255,255,0.5), transparent);
+    animation: scanline 1.5s linear infinite;
+    box-shadow: 0 0 10px rgba(0,255,255,0.5);
+  }
+  .particles { position: absolute; inset: 0; }
+  .dot { position: absolute; width: 2px; height: 2px; border-radius: 50%; animation: floatDot var(--d,4s) ease-in-out infinite; }
+  @keyframes floatDot { 0%,100%{opacity:0.2;transform:translateY(0)} 50%{opacity:0.8;transform:translateY(-10px)} }
+  .prev-intense .demo-title {
+    font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: 900;
+    color: #fff; position: relative; z-index: 1; letter-spacing: 0.06em;
+    animation: intenseGlitch 2.5s steps(1) infinite;
+  }
+  @keyframes intenseGlitch {
+    0%,85%,100%{text-shadow:0 0 20px #00ffff,0 0 60px rgba(0,200,255,0.5);transform:translate(0);}
+    87%{transform:translate(-3px,0);text-shadow:-3px 0 #ff00ff,3px 0 #00ffff,0 0 20px #ff00ff;}
+    89%{transform:translate(3px,-1px);text-shadow:3px 0 #ff00ff,-3px 0 #00ffff;}
+    91%{transform:translate(-1px,1px);clip-path:inset(0 0 50% 0);}
+    93%{transform:translate(0);clip-path:none;}
+    95%{transform:translate(2px,0);text-shadow:2px 0 #ff00ff;filter:hue-rotate(90deg);}
+    97%{transform:translate(0);filter:none;}
+  }
+
+  .label { padding: 14px 16px; border-top: 1px solid #0d0d25; position: relative; }
+  .label h3 { font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 700; color: #00ffff; margin-bottom: 5px; letter-spacing: 0.1em; }
+  .label p { font-size: 12px; color: #445; line-height: 1.5; }
+  .label ul { padding-left: 14px; margin-top: 4px; }
+  .label ul li { font-size: 11px; color: #556; line-height: 1.6; }
+  .footer { text-align: center; color: #222; font-size: 12px; margin-top: 28px; letter-spacing: 0.08em; }
+</style>
+</head>
+<body>
+<h1>Neon Cyberpunk — Animation Intensity</h1>
+<p class="subtitle">How much do you want it to move?</p>
+
+<div class="options">
+
+  <div class="opt" onclick="pick(this,'subtle')">
+    <div class="badge">✓ PICKED</div>
+    <div class="prev prev-subtle">
+      <div class="demo-title">AI TREASURE<br>HUNT</div>
+    </div>
+    <div class="label">
+      <h3>1 — Sleek</h3>
+      <p>Clean and professional with a neon edge:</p>
+      <ul>
+        <li>Soft scanline texture (static)</li>
+        <li>Gentle glow pulse on title</li>
+        <li>Smooth hover transitions</li>
+        <li>Staggered fade-in on load</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="opt" onclick="pick(this,'dynamic')">
+    <div class="badge">✓ PICKED</div>
+    <div class="prev prev-dynamic">
+      <div class="demo-title">AI TREASURE<br>HUNT</div>
+    </div>
+    <div class="label">
+      <h3>2 — Dynamic</h3>
+      <p>Alive and energetic — feels like a real game:</p>
+      <ul>
+        <li>Moving scanline sweep</li>
+        <li>Occasional glitch on title text</li>
+        <li>Neon particle dots floating</li>
+        <li>Button spark effects on hover</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="opt" onclick="pick(this,'intense')">
+    <div class="badge">✓ PICKED</div>
+    <div class="prev prev-intense">
+      <div class="particles">
+        <div class="dot" style="left:15%;top:30%;background:#00ffff;--d:3s"></div>
+        <div class="dot" style="left:75%;top:20%;background:#ff00ff;--d:4s"></div>
+        <div class="dot" style="left:45%;top:70%;background:#00ffff;--d:2.5s"></div>
+        <div class="dot" style="left:85%;top:65%;background:#FFB830;--d:3.5s"></div>
+        <div class="dot" style="left:25%;top:80%;background:#FF6B6B;--d:4.5s"></div>
+        <div class="dot" style="left:60%;top:45%;background:#4A9EFF;--d:2s"></div>
+      </div>
+      <div class="demo-title">AI TREASURE<br>HUNT</div>
+    </div>
+    <div class="label">
+      <h3>3 — Intense</h3>
+      <p>Maximum drama — hard to ignore:</p>
+      <ul>
+        <li>Heavy glitch + chromatic aberration</li>
+        <li>Fast scanline sweep + particles</li>
+        <li>Screen flicker effects</li>
+        <li>Explosive button press animations</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+<p class="footer">Tell me your pick in the terminal (1, 2, or 3)</p>
+
+<script>
+function pick(el, val) {
+  document.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+</script>
+</body>
+</html>
